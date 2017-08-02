@@ -1,2 +1,2 @@
-# gift-exchange-manager
-Gift exchange manager for special events
+# gift-exchange-api
+API for gift exchange webapp
