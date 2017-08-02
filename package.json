@@ -1,0 +1,24 @@
+{
+  "name": "gift-exchange-api",
+  "version": "1.0.0",
+  "description": "API for gift exchange application",
+  "main": "index.js",
+  "dependencies": {
+    "restify": "^5.0.1",
+    "sqlite3": "^3.1.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dcrayne/gift-exchange-api.git"
+  },
+  "author": "Dan Crayne",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dcrayne/gift-exchange-api/issues"
+  },
+  "homepage": "https://github.com/dcrayne/gift-exchange-api#readme"
+}
