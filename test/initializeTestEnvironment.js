@@ -62,5 +62,5 @@ var promise = new Promise(function(resolve, reject) {
   })
 
 }).catch(function(err) {
-  console.log("ERROR!" + err);
+  console.log(err);
 });
