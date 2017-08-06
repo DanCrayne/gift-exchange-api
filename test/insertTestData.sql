@@ -65,9 +65,9 @@ INSERT INTO event_users (event_id, user_id) VALUES (2, 25);
 INSERT INTO event_users (event_id, user_id) VALUES (2, 1);
 INSERT INTO event_users (event_id, user_id) VALUES (2, 5);
 
-INSERT INTO event_exclusions (event_id, user1, user2) VALUES (1, 1, 2);
-INSERT INTO event_exclusions (event_id, user1, user2) VALUES (1, 2, 3);
-INSERT INTO event_exclusions (event_id, user1, user2) VALUES (1, 5, 7);
-INSERT INTO event_exclusions (event_id, user1, user2) VALUES (2, 20, 22);
-INSERT INTO event_exclusions (event_id, user1, user2) VALUES (2, 17, 18);
-INSERT INTO event_exclusions (event_id, user1, user2) VALUES (2, 16, 19);
+INSERT INTO event_exclusions (event_id, user1_id, user2_id) VALUES (1, 1, 2);
+INSERT INTO event_exclusions (event_id, user1_id, user2_id) VALUES (1, 2, 3);
+INSERT INTO event_exclusions (event_id, user1_id, user2_id) VALUES (1, 5, 7);
+INSERT INTO event_exclusions (event_id, user1_id, user2_id) VALUES (2, 20, 22);
+INSERT INTO event_exclusions (event_id, user1_id, user2_id) VALUES (2, 17, 18);
+INSERT INTO event_exclusions (event_id, user1_id, user2_id) VALUES (2, 16, 19);
