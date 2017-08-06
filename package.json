@@ -1,14 +1,17 @@
 {
   "name": "gift-exchange-api",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "API for gift exchange application",
-  "main": "index.js",
+  "main": "server.js",
   "dependencies": {
     "restify": "^5.0.1",
-    "sqlite3": "^3.1.8"
+    "sqlite3": "^3.1.8",
+    "promise": "^8.0.1"
   },
   "devDependencies": {},
   "scripts": {
+    "start": "node server.js",
+    "initdb":"node ./test/initializeTestEnvironment.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
