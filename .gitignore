@@ -3,6 +3,9 @@
 # gift exchange sqlite database
 db/giftex.db
 
+# vim temporary files
+*.swp
+
 # Logs
 logs
 *.log
