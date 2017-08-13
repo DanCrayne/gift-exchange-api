@@ -1,7 +1,8 @@
 var sqlite3 = require('sqlite3').verbose();
 var fs      = require('fs');
+var path    = require('path');
 
-fs.readFile('createTables.sql', function (err, data) {
+fs.readFile(path.resolve(process.cwd() + '/../') + '/db/createTables.sql', function (err, data) {
   if (err) 
     return console.log(err);
 

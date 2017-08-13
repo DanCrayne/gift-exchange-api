@@ -1,18 +1,17 @@
 var restify = require('restify');
-
-function respond(req, res, next) {
-  res.send('hello ' + req.params.name);
-  next();
-}
-
 var server = restify.createServer();
-server.get('/hello/:name', respond);
-server.head('/hello/:name', respond);
+var Promise = require('promise');
+var Database = require('./api/core/database/Database.js');
 
-// deal with curl's 'connection keep-alive' idiosyncrasy 
-// (see http://restify.com/docs/home/)
-server.pre(restify.plugins.pre.userAgentConnection());
+var config = require('./config');
+require('./api/core/routes')(server);
 
-server.listen(8080, function() {
-  console.log('%s listening at %s', server.name, server.url);
+var db = new Database(config.dbPath);
+
+db.getAllEvents().done(function(results) { 
+  console.log(results); 
+  });
+
+server.listen(config.port, function() {
+  console.log('%s listening on port %s', server.name, config.port);
 });
