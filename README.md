@@ -1,2 +1,2 @@
 # gift-exchange-api
-API for gift exchange webapp
+Restify API for gift exchange webapp
