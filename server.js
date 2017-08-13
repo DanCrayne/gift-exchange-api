@@ -8,7 +8,7 @@ require('./api/core/routes')(server);
 
 var db = new Database(config.dbPath);
 
-db.getAllEvents().done(function(results) { 
+db.getAllUsers().done(function(results) { 
   console.log(results); 
   });
 
