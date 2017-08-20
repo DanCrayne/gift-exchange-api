@@ -4,15 +4,22 @@ var Database = require(config.dbController);
 
 module.exports = {
 
-  retrieveAllEvents : function(req, res) {
+  retrieveAll : function() {
     return new Promise(function(resolve, reject) {
       db = new Database(config.dbFile);
-      db.getAllRecordsFromTable('events').done(function(results) {
-        let eventList = '';
-        for (let event of results) {
-          eventList += event.id + ' ' + event.name + ' ' + event.description + '\n';
-        }
-        resolve(eventList);
+      db.getAllRecordsFromTable('events')
+      .done(function(results) {
+        resolve(results);
+      });
+    });
+  }
+
+, retrieveById : function(id) {
+    return new Promise(function(resolve, reject) {
+      db = new Database(config.dbFile);
+      db.executeQuery('SELECT * FROM events WHERE id = ' + id)
+      .done(function(results) {
+        resolve(results[0]);
       });
     });
   }

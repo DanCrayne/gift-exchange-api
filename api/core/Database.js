@@ -19,6 +19,32 @@ function Database(path) {
     });
   };
 
+  this.executeQuery = function(sqlQuery) {
+    return new Promise(function(resolve, reject) {
+      let sqliteDb = new sqlite3.Database(path);
+
+      sqliteDb.all(sqlQuery, function(err, rows) {
+        if (err)  { reject(err); }
+        else      { resolve(rows); }
+      })
+
+      sqliteDb.close();
+    });
+  };
+
+  this.executeSafeQuery = function(sqlQuery, params) {
+    return new Promise(function(resolve, reject) {
+      let sqliteDb = new sqlite3.Database(path);
+
+      sqliteDb.run(sqlQuery, params, function(err) {
+        if (err)  { reject(err); }
+        else      { resolve(db); }
+      })
+
+      sqliteDb.close();
+    });
+  };
+
 };
 
 module.exports = Database;
