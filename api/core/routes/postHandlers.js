@@ -10,5 +10,5 @@ module.exports = function(server, restify) {
   });
 
   // enable access to request data in req.params
-  server.use(restify.plugins.bodyParser());
+  server.use(restify.plugins.bodyParser( { mapParams : true } ));
 }

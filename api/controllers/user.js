@@ -21,23 +21,14 @@ module.exports = {
                         , $password  : password 
                         };
       // Test Case - should fail
-      /*
-      let insertStmt = "INSERT INTO "
-                     + "users(id, first_name, last_name, email_addr, password) "
-                     + "VALUES ($firstName, $lastName, $email, $password)";
-      let queryParams = { $id        : 1
-                        , $firstName : firstName 
-                        , $lastName  : lastName
-                        , $email     : email
-                        , $password  : password 
-                        };
-                        */
+      // insertStmt = "INSERT INTO users(id) VALUES ($id)";
+      // queryParams = { $id : 1 };
       
       db.executeSafeQuery(insertStmt, queryParams)
         .done(function(result) {
           resolve(result);
         }, function(err) {
-          reject(err)
+          reject(err);
         });
     });
   }
@@ -48,8 +39,10 @@ module.exports = {
       db.getAllRecordsFromTable('users')
       .done(function(results) {
         resolve(results);
+      }, function(err) {
+          reject(err);
       });
-    });
+    })
   }
 
 , retrieveById : function(id) {
@@ -58,6 +51,8 @@ module.exports = {
       db.executeQuery('SELECT * FROM users WHERE id = ' + id)
       .done(function(results) {
         resolve(results[0]);
+      }, function(err) {
+        reject(err);
       });
     });
   }
@@ -76,6 +71,7 @@ module.exports = {
   }
 
 , updateByProperty : function(id, property, value) {
+
   // ...
   }
 
