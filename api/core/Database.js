@@ -38,7 +38,7 @@ function Database(path) {
 
       sqliteDb.run(sqlQuery, params, function(err) {
         if (err)  { reject(err); }
-        else      { resolve(db); }
+        else      { resolve(this); }
       })
 
       sqliteDb.close();

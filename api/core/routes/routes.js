@@ -6,57 +6,76 @@ module.exports = function(server) {
   require('./preHandlers.js')(server, restify);
   require('./postHandlers.js')(server, restify);
 
-  // TODO: return 404 not found upon error for all get routes
+  server.get('/users', function(req, res, next) {
+    controllers.user.retrieveAll()
+      .done(function(results) {
+        res.send(200, results);
 
-  server.get('http://localhost:8080/users', function(req, res, next) {
-    controllers.user.retrieveAll().done(function(results) {
-      res.send(results);
-      return next();
-    });
+      }, function(err) {
+        res.send(404, 'could not retrieve users');
+
+      });
+
+    return next();
   });
 
   server.get('/users/:id', function(req, res, next) {
-    controllers.user.retrieveById(req.params.id).done(function(result) {
-      res.send(result);
-      return next();
-    });
+    controllers.user.retrieveById(req.params.id)
+      .done(function(result) {
+        res.send(200, result);
+      
+      }, function(err) {
+        res.send(404, 'could not retrieve user ' + req.params.id);
+
+      });
+
+    return next();
   });
 
   server.post('/users', function(req, res, next) {
-    // POST
-    // 201 success
-    // 404 not found
-    // 409 conflict (already exists)
     controllers.user.create( req.params.firstName
                            , req.params.lastName
                            , req.params.email
                            , req.params.password
                            )
       .done(function(result) {
-        res.send(201, { success : true
-                      , message : 'created new user'
-                      });
+        res.send(201, '/users/' + result.lastID);
+
       }, function(err) {
-        res.send(404, { success : false
-                      , message : 'could not create user'
-                      });
+        if (err.errno === 19) // conflict
+          res.send(409, 'user id already exists');
+
+        else 
+          res.send(404, 'cannot create user');
+
       });
 
     return next();
   });
 
   server.get('/events', function(req, res, next) {
-    controllers.event.retrieveAll().done(function(results) {
-      res.send(results);
-      return next();
-    });
+    controllers.event.retrieveAll()
+      .done(function(results) {
+        res.send(200, results);
+
+        }, function(err) {
+          res.send(404, 'could not retrieve events');
+
+        });
+
+    return next();
   });
 
   server.get('/events/:id', function(req, res, next) {
-    controllers.event.retrieveById(req.params.id).done(function(result) {
-      res.send(result);
-      return next();
-    });
-  });
+    controllers.event.retrieveById(req.params.id)
+      .done(function(result) {
+        res.send(200, result);
 
+        }, function(err) {
+          res.send(404, 'could not retrieve events');
+
+        });
+
+    return next();
+  });
 }
