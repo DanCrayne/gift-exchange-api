@@ -4,7 +4,7 @@ var Database = require(config.dbController);
 
 module.exports = {
 
-  // TODO: Add error handling on promises
+// *** Create ***
 
   create : function(firstName, lastName, email, password) {
     return new Promise(function(resolve, reject) {
@@ -20,7 +20,7 @@ module.exports = {
                         , $email     : email
                         , $password  : password 
                         };
-      // Test Case - should fail
+      // Test Case - should fail with error 409 (conflict)
       // insertStmt = "INSERT INTO users(id) VALUES ($id)";
       // queryParams = { $id : 1 };
       
@@ -32,6 +32,9 @@ module.exports = {
         });
     });
   }
+
+
+// *** Retrieve ***
 
 , retrieveAll : function() {
     return new Promise(function(resolve, reject) {
@@ -57,25 +60,90 @@ module.exports = {
     });
   }
 
-, updateFirstName : function(id, newFirstName) {
-    this.updateByProperty(id, 'firstName', newFirstName);
+
+// *** Update ***
+
+, updateFirstName : function(id, firstName) {
+    this.updateByDbField(id, 'first_name', firstName);
   }
 
-, updateLastName : function(id, newLastName) {
+, updateLastName : function(id, lastName) {
+    this.updateByDbField(id, 'last_name', lastName);
   }
 
-, updateEmail : function(id, newEmail) {
+, updateEmail : function(id, email) {
+    this.updateByDbField(id, 'email', email);
   }
 
-, updatePassword : function(id, newPassword) {
+, updatePassword : function(id, password) {
+    this.updateByDbField(id, 'password', password);
   }
 
-, updateByProperty : function(id, property, value) {
+, updateByDbField : function(id, fieldName, value) {
+    return new Promise(function(resolve, reject) {
+      db = new Database(config.dbFile);
 
-  // ...
+      updateStmt = ' UPDATE users'
+                 + ' SET ' + fieldName + '=' + '$value'
+                 + ' WHERE id=$id'
+                 ;
+      queryParams = { $value : value
+                    , $id    : id }
+      
+      db.executeSafeQuery(updateStmt, queryParams)
+        .done(function(result) {
+          resolve(result);
+        }, function(err) {
+          reject(err);
+        });
+    });
   }
 
-, delete : function(id) {
+, updateAll : function(id, firstName, lastName, email, password) {
+    return new Promise(function(resolve, reject) {
+      db = new Database(config.dbFile);
+
+      updateStmt = ' UPDATE users'
+                 + ' SET'
+                 + '   first_name = $firstName'
+                 + ' , last_name  = $lastName'
+                 + ' , email_addr = $email'
+                 + ' , password   = $password'
+                 + ' WHERE id = $id'
+                 ;
+      queryParams = { $id        : id
+                    , $firstName : firstName
+                    , $lastName  : lastName
+                    , $email     : email
+                    , $password  : password
+                    };
+      
+      db.executeSafeQuery(updateStmt, queryParams)
+        .done(function(result) {
+          resolve(result);
+        }, function(err) {
+          reject(err);
+        });
+    });
+  }
+
+
+// *** Delete ***
+
+, deleteById : function(id) {
+    return new Promise(function(resolve, reject) {
+      db = new Database(config.dbFile);
+
+      let deleteStmt = 'DELETE FROM users WHERE id=$id';
+      let queryParams = { $id : id };
+
+      db.executeSafeQuery(deleteStmt, queryParams)
+      .done(function(results) {
+        resolve(results);
+      }, function(err) {
+        reject(err)
+      });
+    });
   }
 
 };
