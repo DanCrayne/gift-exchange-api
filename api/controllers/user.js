@@ -103,20 +103,36 @@ module.exports = {
     return new Promise(function(resolve, reject) {
       db = new Database(config.dbFile);
 
-      updateStmt = ' UPDATE users'
-                 + ' SET'
-                 + '   first_name = $firstName'
-                 + ' , last_name  = $lastName'
-                 + ' , email_addr = $email'
-                 + ' , password   = $password'
-                 + ' WHERE id = $id'
-                 ;
-      queryParams = { $id        : id
-                    , $firstName : firstName
-                    , $lastName  : lastName
-                    , $email     : email
-                    , $password  : password
-                    };
+      if (password === null) {
+        updateStmt = ' UPDATE users'
+                   + ' SET'
+                   + '   first_name = $firstName'
+                   + ' , last_name  = $lastName'
+                   + ' , email_addr = $email'
+                   + ' , password   = $password'
+                   + ' WHERE id = $id'
+                   ;
+        queryParams = { $id        : id
+                      , $firstName : firstName
+                      , $lastName  : lastName
+                      , $email     : email
+                      , $password  : password
+                      };
+      }
+      else {
+        updateStmt = ' UPDATE users'
+                   + ' SET'
+                   + '   first_name = $firstName'
+                   + ' , last_name  = $lastName'
+                   + ' , email_addr = $email'
+                   + ' WHERE id = $id'
+                   ;
+        queryParams = { $id        : id
+                      , $firstName : firstName
+                      , $lastName  : lastName
+                      , $email     : email
+                      };
+      }
       
       db.executeSafeQuery(updateStmt, queryParams)
         .done(function(result) {
