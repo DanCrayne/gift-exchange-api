@@ -47,6 +47,32 @@ module.exports = {
     });
   }
 
+, addUser : function(eventId, userId) {
+    return new Promise(function(resolve, reject) {
+      db = new Database(config.dbFile);
+
+      // The following variables allow for sanitizing the input for
+      // the forthcoming 'safe query'
+      let insertStmt = " INSERT INTO "
+                     + "   event_users(event_id, user_id)"
+                     + " VALUES"
+                     + "   ($eventId, $userId)";
+      let queryParams = { $eventId : eventId
+                        , $userId  : userId
+                        };
+
+      // Test Case - should fail with error 409 (conflict)
+      // insertStmt = "INSERT INTO events(id) VALUES ($id)";
+      // queryParams = { $id : 1 };
+      db.executeSafeQuery(insertStmt, queryParams)
+        .done(function(result) {
+          resolve(result);
+        }, function(err) {
+          reject(err);
+        });
+    });
+  }
+
 
 // *** Retrieve ***
 

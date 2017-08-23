@@ -62,6 +62,20 @@ module.exports = function(server) {
     return next();
   });
 
+  // add a user to event
+  server.post('/events/:id/users', function(req, res, next) {
+    controllers.event.addUser(req.params.eventId, req.params.userId) 
+      .done(function(result) {
+        res.send(200, 'successfully added user to event');
+
+      }, function(err) {
+        res.send(404, 'cannot add user to event');
+
+      });
+
+    return next();
+  });
+
 
   // *** Retrieve ***
 
@@ -120,11 +134,9 @@ module.exports = function(server) {
   server.get('/events/:id/users', function(req, res, next) {
     controllers.event.retrieveEventUsers(req.params.id)
       .done(function(results) {
-        console.log(results);
         res.send(200, results);
 
         }, function(err) {
-          console.log(err);
           res.send(404, 'could not retrieve event users');
 
         });
