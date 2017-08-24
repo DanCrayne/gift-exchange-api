@@ -41,6 +41,7 @@ module.exports = {
       db.executeSafeQuery(insertStmt, queryParams)
         .done(function(result) {
           resolve(result);
+
         }, function(err) {
           reject(err);
         });
@@ -51,8 +52,6 @@ module.exports = {
     return new Promise(function(resolve, reject) {
       db = new Database(config.dbFile);
 
-      // The following variables allow for sanitizing the input for
-      // the forthcoming 'safe query'
       let insertStmt = " INSERT INTO "
                      + "   event_users(event_id, user_id)"
                      + " VALUES"
@@ -61,12 +60,81 @@ module.exports = {
                         , $userId  : userId
                         };
 
-      // Test Case - should fail with error 409 (conflict)
-      // insertStmt = "INSERT INTO events(id) VALUES ($id)";
-      // queryParams = { $id : 1 };
       db.executeSafeQuery(insertStmt, queryParams)
         .done(function(result) {
           resolve(result);
+
+        }, function(err) {
+          reject(err);
+        });
+    });
+  }
+
+, addGiverReceiverPair : function(eventId, pair) {
+    return new Promise(function(resolve, reject) {
+      db = new Database(config.dbFile);
+
+      let insertStmt = " INSERT INTO "
+                     + "   randomized_pairs(event_id, giver_id, receiver_id)"
+                     + " VALUES "
+                     + "   ($eventId, $giverId, $receiverId)";
+
+      let queryParams = { $eventId    : eventId
+                        , $giverId    : pair[0]
+                        , $receiverId : pair[1]
+                        };
+
+      db.executeSafeQuery(insertStmt, queryParams)
+        .done(function(result) {
+          resolve(result);
+
+        }, function(err) {
+          reject(err);
+        });
+    });
+}
+
+
+, setGiverReceiverPairs : function(eventId, pairs) {
+  // pairs should be an array of two elements of form
+  // [ giver_id, receiver_id ]
+    return new Promise(function(resolve, reject) {
+      db = new Database(config.dbFile);
+
+      // first, delete any previous results for this event and insert new pairs
+      let delStmt = " DELETE FROM randomized_pairs "
+                  + "   WHERE event_id = ?;";
+      db.executeSafeQuery(delStmt, eventId)
+        .done(function(result) {
+          // now, insert pairs into table of randomized pairs
+          
+          let paramPlaceholders = [];
+
+          for (let i = 0; i < pairs.length; i++) {
+            // parameter format: (event_id, giver_id, receiver_id)
+            paramPlaceholders.push('(?, ?, ?)');
+          }
+
+          paramPlaceholdersStr = paramPlaceholders.join(',');
+
+          let insertStmt = " INSERT INTO"
+                         + "   randomized_pairs(event_id, giver_id, receiver_id)"
+                         + " VALUES "
+                         + paramPlaceholdersStr;
+
+          let paramValues = [];
+          for (pair of pairs) {
+            paramValues.push(eventId, pair[0], pair[1]);
+          }
+
+          db.executeSafeQuery(insertStmt, paramValues)
+            .done(function(result) {
+              resolve(result);
+
+            }, function(err) {
+              reject(err);
+            });
+
         }, function(err) {
           reject(err);
         });
@@ -83,6 +151,7 @@ module.exports = {
       db.getAllRecordsFromTable('events')
       .done(function(results) {
         resolve(results);
+
       }, function(err) {
         reject(err)
       });
@@ -96,6 +165,7 @@ module.exports = {
       db.executeQuery('SELECT * FROM events WHERE id = ' + id)
       .done(function(results) {
         resolve(results[0]);
+
       }, function(err) {
         reject(err)
       });
@@ -120,6 +190,26 @@ module.exports = {
       db.executeQuery(eventUsersSql)
       .done(function(results) {
         resolve(results);
+
+      }, function(err) {
+        reject(err);
+      });
+    });
+  }
+
+, hasBeenRandomized : function(id) {
+    return new Promise(function(resolve, reject) {
+      db = new Database(config.dbFile);
+
+      let eventUsersSql 
+          = 'SELECT randomized'
+          + ' FROM events'
+          + ' WHERE id = ' + id
+          ;
+      db.executeQuery(eventUsersSql)
+      .done(function(results) {
+        resolve(results);
+
       }, function(err) {
         reject(err);
       });
@@ -169,6 +259,14 @@ module.exports = {
     return this.updateByDbField(id, 'created', dateCreated);
   }
 
+, updateRandomized : function(id, randomized) {
+    return this.updateByDbField(id, 'randomized', randomized);
+  }
+
+, updateMessagesSent : function(id, messagesSent) {
+    return this.updateByDbField(id, 'messages_sent', messagesSent);
+  }
+
 , updateByDbField : function(id, fieldName, value) {
     return new Promise(function(resolve, reject) {
       db = new Database(config.dbFile);
@@ -183,6 +281,7 @@ module.exports = {
       db.executeSafeQuery(updateStmt, queryParams)
         .done(function(result) {
           resolve(result);
+
         }, function(err) {
           reject(err);
         });
@@ -234,6 +333,7 @@ module.exports = {
       db.executeSafeQuery(updateStmt, queryParams)
         .done(function(result) {
           resolve(result);
+
         }, function(err) {
           reject(err);
         });
@@ -253,6 +353,7 @@ module.exports = {
       db.executeSafeQuery(deleteStmt, queryParams)
       .done(function(results) {
         resolve(results);
+
       }, function(err) {
         reject(err)
       });

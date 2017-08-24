@@ -63,7 +63,7 @@ module.exports = function(server) {
   });
 
   // add a user to event
-  server.post('/events/:id/users', function(req, res, next) {
+  server.post('/events/:eventId/users/:userId', function(req, res, next) {
     controllers.event.addUser(req.params.eventId, req.params.userId) 
       .done(function(result) {
         res.send(200, 'successfully added user to event');
@@ -233,6 +233,54 @@ module.exports = function(server) {
       });
 
     return next();
+  });
+
+
+  // *** Actions ***
+
+  server.post('/events/:id/randomize', function(req, res, next) {
+
+    var shuffle = require('knuth-shuffle').knuthShuffle;
+
+    let userArray = [];
+
+    controllers.event.retrieveEventUsers(req.params.id)
+      .then(function(result) {
+        for (user of result) {
+          userArray.push(user.id);
+        }
+
+        userArray = shuffle(userArray);
+        var pairs = [];
+
+        // create the list of pairs:
+        // each element is paired with the next element, however the
+        // last element is paired with the first
+        for (let i = 0; i < userArray.length - 1; i++) {
+          pair = [ userArray[i], userArray[i + 1] ];
+          pairs.push(pair);
+        }
+        // add final pair to list of pairs
+        pairs.push([ userArray[userArray.length - 1], userArray[0] ]);
+
+        controllers.event.setGiverReceiverPairs(req.params.id, pairs)
+          .done(function(result) {
+            controllers.event.updateRandomized(req.params.id, true);
+            res.send(200, pairs);
+            })
+//          .fail(function() {
+//            controllers.event.updateRandomized(req.params.id, false);
+//            res.send(404, 'failed');
+//          });
+        });
+  });
+
+  server.post('/events/:id/sendmsgs', function(req, res, next) {
+    controllers.event.hasBeenRandomized(req.params.id)
+      .done(function(result) {
+        console.log(result);
+        res.send(200, result);
+      });
   });
 
 }

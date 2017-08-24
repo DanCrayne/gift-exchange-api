@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS events (
 , loc_zipcode     varchar(15)
 , occurs          timestamp
 , created         timestamp
+, randomized      boolean
+, messages_sent   boolean
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -37,6 +39,13 @@ CREATE TABLE IF NOT EXISTS event_exclusions (
 , user1_id        integer       NOT NULL REFERENCES users  (id)
 , user2_id        integer       NOT NULL REFERENCES users  (id)
 , PRIMARY KEY (event_id, user1_id, user2_id)
+);
+
+CREATE TABLE IF NOT EXISTS randomized_pairs (
+  event_id        integer       NOT NULL REFERENCES events (id)
+, giver_id        integer       NOT NULL REFERENCES users  (id)
+, receiver_id     integer       NOT NULL REFERENCES users  (id)
+, created         timestamp     
 );
 
 CREATE TABLE IF NOT EXISTS wishlist_item (
