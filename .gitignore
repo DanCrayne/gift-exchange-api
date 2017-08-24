@@ -1,5 +1,8 @@
 # based on .gitignore from https://github.com/github/gitignore/blob/master/Node.gitignore
 
+# nodemailer transport settings
+config/nodemailerSettings.json
+
 # gift exchange sqlite database
 db/giftex.db
 

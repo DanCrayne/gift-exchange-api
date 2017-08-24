@@ -1,6 +1,7 @@
 var restify = require('restify');
 var config  = require(process.cwd() + '/config');
 var controllers = require(config.controllersPath);
+var nodemailerSettings = require(config.nodemailerSettings);
 
 // see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
 // for a description of REST protocols
@@ -240,18 +241,17 @@ module.exports = function(server) {
 
   server.post('/events/:id/randomize', function(req, res, next) {
 
-    var shuffle = require('knuth-shuffle').knuthShuffle;
-
+    let shuffle = require('knuth-shuffle').knuthShuffle;
     let userArray = [];
 
     controllers.event.retrieveEventUsers(req.params.id)
       .then(function(result) {
+        let pairs = [];
+
         for (user of result) {
           userArray.push(user.id);
         }
-
         userArray = shuffle(userArray);
-        var pairs = [];
 
         // create the list of pairs:
         // each element is paired with the next element, however the
@@ -263,24 +263,168 @@ module.exports = function(server) {
         // add final pair to list of pairs
         pairs.push([ userArray[userArray.length - 1], userArray[0] ]);
 
-        controllers.event.setGiverReceiverPairs(req.params.id, pairs)
-          .done(function(result) {
-            controllers.event.updateRandomized(req.params.id, true);
-            res.send(200, pairs);
-            })
-//          .fail(function() {
-//            controllers.event.updateRandomized(req.params.id, false);
-//            res.send(404, 'failed');
-//          });
-        });
+        return pairs;
+      })
+
+      .then(function(result) {
+        console.log(result);
+        res.send(200, result);
+        return controllers.event.setGiverReceiverPairs(req.params.id, result);
+      })
+      
+      .then(function(result) {
+        return controllers.event.updateRandomizedFlag(req.params.id, true);
+      })
+
+      .then(function(result) {
+        res.send(200, 'successfully randomized');
+      })
+
+      .catch(function(err) {
+        res.send(404, 'could not retrieve event users');
+      });
+
+    return next();
   });
 
   server.post('/events/:id/sendmsgs', function(req, res, next) {
+    // TODO: notify client if a message was not delivered
+
     controllers.event.hasBeenRandomized(req.params.id)
-      .done(function(result) {
-        console.log(result);
+      .then(function(result) {
+        // expects result to be of form [{'randomized'} : <0 or 1>]
+        // convert result to a boolean
+        return isRandomized = !!+result[0]['randomized'];
+      })
+
+      .then(function(result) {
+        return controllers.event.retrieveRandomizedPairs(req.params.id);
+      })
+
+      .then(function(result) {
+//        console.log(result);
+        sendMessages(result);
         res.send(200, result);
+      })
+
+      .catch(function(err) {
+        res.send(404, 'could not send messages');
       });
+
+    return next();
+  });
+  
+}
+
+function sendMessages(pairs) {
+  const nodemailer = require('nodemailer');
+  let mailOptions = {};
+
+  let transporter = nodemailer.createTransport({
+    host:   nodemailerSettings.host
+  , port:   nodemailerSettings.port
+  , secure: nodemailerSettings.secure
+  , auth: {
+      user: nodemailerSettings.auth.user
+    , pass: nodemailerSettings.auth.pass
+    }
   });
 
+  for (pair of pairs.slice(1,2)) {
+    htmlMessage = `
+                  Greetings ${pair.giver_first_name},
+                  <br><br>
+                  You've been selected to give ${pair.receiver_first_name} 
+                  ${pair.receiver_last_name} a gift.
+                  `
+
+    console.log(pair.giver_email_addr + ' -> ' + pair.receiver_first_name + ' ' + pair.receiver_last_name);
+
+    if (nodemailerSettings.testing === true) {
+      mailOptions = {
+          from:     nodemailerSettings.auth.user
+        , to:       nodemailerSettings.testRecipient
+        , subject:  'Gift Exchange Information (TESTING)'
+        , html:     htmlMessage
+      };
+    }
+    else {
+      mailOptions = {
+        from:     nodemailerSettings.auth.user
+      , to:       nodemailerSettings.testAcct
+      , subject:  'Gift Exchange Information'
+      , html:     htmlMessage
+      };
+    }
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error)
+        return console.log(error);
+      console.log('Message %s sent: %s', info.messageId, info.response);
+    });
+  }
 }
+/*
+function sendMessages(pairs) {
+  var Promise = require('promise');
+  var fs = require('fs');
+  const nodemailer = require('nodemailer');
+  htmlMessage = '';
+
+  // get email body to send to participants
+  var promise = new Promise(function(resolve, reject) {
+    fs.readFile(config.emailBodyHtml, function(err, data) {
+      if (err) reject(err);
+      else resolve(data);
+    });
+  })
+
+  .then(function(data) {
+    console.log('data: ' + data);
+    htmlMessage = data;
+
+    let mailOptions = {};
+    let transporter = nodemailer.createTransport({
+      host:   nodemailerSettings.host
+    , port:   nodemailerSettings.port
+    , secure: nodemailerSettings.secure
+    , auth: {
+        user: nodemailerSettings.auth.user
+      , pass: nodemailerSettings.auth.pass
+      }
+    });
+
+    for (pair of pairs.slice(1,2)) {
+      console.log(pair.giver_email_addr + ' -> ' + pair.receiver_first_name + ' ' + pair.receiver_last_name);
+
+      if (nodemailerSettings.testing === true) {
+        mailOptions = {
+            from:     nodemailerSettings.auth.user
+          , to:       nodemailerSettings.testRecipient
+          , subject:  'Gift Exchange Information (TESTING)'
+          , html:     htmlMessage
+        };
+      }
+
+      else {
+        mailOptions = {
+          from:     nodemailerSettings.auth.user
+        , to:       nodemailerSettings.testAcct
+        , subject:  'Gift Exchange Information'
+        , html:     htmlMessage
+        };
+      }
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error)
+          return console.log(error);
+        console.log('Message %s sent: %s', info.messageId, info.response);
+      });
+    }
+  })
+
+  .catch(function(err) {
+    console.log(err);
+  });
+}
+  */

@@ -106,7 +106,7 @@ module.exports = {
                   + "   WHERE event_id = ?;";
       db.executeSafeQuery(delStmt, eventId)
         .done(function(result) {
-          // now, insert pairs into table of randomized pairs
+          // insert pairs into table of randomized pairs
           
           let paramPlaceholders = [];
 
@@ -197,12 +197,63 @@ module.exports = {
     });
   }
 
+, retrieveRandomizedPairs(eventId) {
+    return new Promise(function(resolve, reject) {
+      db = new Database(config.dbFile);
+
+      randPairsQuery = 
+         "SELECT r.event_id"
+       + ", u1.id         AS giver_id"
+       + ", u1.first_name AS giver_first_name"
+       + ", u1.last_name  AS giver_last_name"
+       + ", u1.email_addr AS giver_email_addr"
+
+       + ", u2.id         AS receiver_id"
+       + ", u2.first_name AS receiver_first_name"
+       + ", u2.last_name  AS receiver_last_name"
+       + ", u2.email_addr AS receiver_email_addr"
+
+       + " FROM randomized_pairs r"
+       + "      LEFT JOIN users u1 ON (r.giver_id    = u1.id)"
+       + "      LEFT JOIN users u2 ON (r.receiver_id = u2.id)"
+       + " WHERE r.event_id = " + eventId
+       ;
+
+      db.executeQuery(randPairsQuery)
+      .done(function(results) {
+        resolve(results);
+
+      }, function(err) {
+        reject(err)
+      });
+    });
+  }
+
 , hasBeenRandomized : function(id) {
     return new Promise(function(resolve, reject) {
       db = new Database(config.dbFile);
 
       let eventUsersSql 
           = 'SELECT randomized'
+          + ' FROM events'
+          + ' WHERE id = ' + id
+          ;
+      db.executeQuery(eventUsersSql)
+      .done(function(results) {
+        resolve(results);
+
+      }, function(err) {
+        reject(err);
+      });
+    });
+  }
+
+, messagesHaveBeenSent : function(id) {
+    return new Promise(function(resolve, reject) {
+      db = new Database(config.dbFile);
+
+      let eventUsersSql 
+          = 'SELECT messages_sent'
           + ' FROM events'
           + ' WHERE id = ' + id
           ;
@@ -259,7 +310,7 @@ module.exports = {
     return this.updateByDbField(id, 'created', dateCreated);
   }
 
-, updateRandomized : function(id, randomized) {
+, updateRandomizedFlag : function(id, randomized) {
     return this.updateByDbField(id, 'randomized', randomized);
   }
 

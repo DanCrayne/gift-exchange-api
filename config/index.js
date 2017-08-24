@@ -3,4 +3,5 @@ module.exports = {
 , 'dbController'    : process.cwd() + '/api/core/Database.js'
 , 'controllersPath' : process.cwd() + '/api/controllers'
 , 'port'            : (process.env.PORT || 8080)
+, 'nodemailerSettings' : process.cwd() + '/config/nodemailerSettings.json'
 }
