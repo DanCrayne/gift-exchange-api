@@ -267,7 +267,7 @@ module.exports = function(server) {
       })
 
       .then(function(result) {
-        console.log(result);
+//        console.log(result);
         res.send(200, result);
         return controllers.event.setGiverReceiverPairs(req.params.id, result);
       })
@@ -298,6 +298,9 @@ module.exports = function(server) {
       })
 
       .then(function(result) {
+        if (result === false)
+          res.send(404, 'event users have not been randomized');
+
         return controllers.event.retrieveRandomizedPairs(req.params.id);
       })
 
@@ -308,12 +311,45 @@ module.exports = function(server) {
       })
 
       .catch(function(err) {
+        console.log(err);
         res.send(404, 'could not send messages');
       });
 
     return next();
   });
   
+  // send a single user their recipient
+  server.post('/events/:eventId/sendmsgs/:giverId', function(req, res, next) {
+    controllers.event.hasBeenRandomized(req.params.eventId)
+      .then(function(result) {
+        // expects result to be of form [{'randomized'} : <0 or 1>]
+        // convert result to a boolean
+        return isRandomized = !!+result[0]['randomized'];
+      })
+
+      .then(function(result) {
+        if (result === false)
+          res.send(404, 'event users have not been randomized');
+
+        return controllers.event.retrieveRandomizedPair(
+                                  req.params.eventId, req.params.giverId);
+      })
+
+      .then(function(result) {
+        console.log(result);
+        console.log('before sendMessages');
+        sendMessages(result);
+        res.send(200, result);
+      })
+
+      .catch(function(err) {
+        console.log(err);
+        res.send(404, 'could not send message');
+      });
+
+    return next();
+  });
+
 }
 
 function sendMessages(pairs) {
@@ -330,7 +366,7 @@ function sendMessages(pairs) {
     }
   });
 
-  for (pair of pairs.slice(1,2)) {
+  for (pair of pairs) {
     htmlMessage = `
                   Greetings ${pair.giver_first_name},
                   <br><br>

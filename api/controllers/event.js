@@ -229,6 +229,38 @@ module.exports = {
     });
   }
 
+, retrieveRandomizedPair(eventId, giverId) {
+    return new Promise(function(resolve, reject) {
+      db = new Database(config.dbFile);
+
+      randPairsQuery = 
+         "SELECT r.event_id"
+       + ", u1.id         AS giver_id"
+       + ", u1.first_name AS giver_first_name"
+       + ", u1.last_name  AS giver_last_name"
+       + ", u1.email_addr AS giver_email_addr"
+
+       + ", u2.id         AS receiver_id"
+       + ", u2.first_name AS receiver_first_name"
+       + ", u2.last_name  AS receiver_last_name"
+       + ", u2.email_addr AS receiver_email_addr"
+
+       + " FROM randomized_pairs r"
+       + "      LEFT JOIN users u1 ON (r.giver_id    = u1.id)"
+       + "      LEFT JOIN users u2 ON (r.receiver_id = u2.id)"
+       + " WHERE r.event_id = " + eventId + " AND u1.id = " + giverId
+       ;
+
+      db.executeQuery(randPairsQuery)
+      .done(function(results) {
+        resolve(results);
+
+      }, function(err) {
+        reject(err)
+      });
+    });
+  }
+
 , hasBeenRandomized : function(id) {
     return new Promise(function(resolve, reject) {
       db = new Database(config.dbFile);
