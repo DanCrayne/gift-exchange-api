@@ -15,6 +15,4 @@ module.exports = function(server, restify) {
   server.use(restify.plugins.bodyParser( { mapParams : true } ));
 
   server.use(cors());
-//  server.use(restify.plugins.fullResponse());
-//  console.log(restify.plugins.CORS);
 }
