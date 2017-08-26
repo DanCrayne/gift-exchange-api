@@ -169,7 +169,48 @@ module.exports = function(server) {
     return next();
   });
 
+
+  // The following is needed to process preflight requests; see:
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+  server.opts(/.*/, function (req,res,next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", 
+              req.header("Access-Control-Request-Method"));
+    res.header("Access-Control-Allow-Headers", 
+              req.header("Access-Control-Request-Headers"));
+    res.send(200);
+    return next();
+  });
+
   server.put('/events/:id', function(req, res, next) {
+    controllers.event.updateAll( 
+                             req.params.id
+                           , req.params.name
+                           , req.params.description
+                           , req.params.adminId
+                           , req.params.maxGiftPrice
+                           , req.params.street
+                           , req.params.city
+                           , req.params.state
+                           , req.params.zipcode
+                           , req.params.dateOccurs
+                           , req.params.dateCreated
+                           )
+      .done(function(result) {
+        res.send(204, 'success');
+
+      }, function(err) {
+        res.send(404, 'cannot update event');
+
+      });
+
+    return next();
+  });
+
+
+  server.put('/events/:id', function(req, res, next) {
+    console.log('test');
+    console.log(req.params.name);
     controllers.event.updateAll( 
                              req.params.id
                            , req.params.name

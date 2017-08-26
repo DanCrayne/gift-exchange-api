@@ -9,6 +9,7 @@
     "promise": "^8.0.1",
     "knuth-shuffle": "^1.0.1",
     "node-mailer": "^4.0.1"
+    "cors": "^2.8.4"
   },
   "devDependencies": {},
   "scripts": {
