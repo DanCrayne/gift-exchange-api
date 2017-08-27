@@ -426,6 +426,8 @@ module.exports = {
 
 // *** Delete ***
 
+// TODO: delete records for this event in events_users and randomized_pairs tables
+
 , deleteById : function(id) {
     return new Promise(function(resolve, reject) {
       db = new Database(config.dbFile);

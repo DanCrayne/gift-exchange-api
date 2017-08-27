@@ -28,7 +28,7 @@ module.exports = function(server) {
         if (err.errno === 19) // conflict
           res.send(409, 'user already exists');
 
-        else 
+        else
           res.send(404, 'cannot create user');
 
       });
@@ -70,6 +70,9 @@ module.exports = function(server) {
         res.send(200, 'successfully added user to event');
 
       }, function(err) {
+        console.log('eid' + req.params.eventId + ' uid: ' + req.params.userId);
+        console.log(err);
+
         res.send(404, 'cannot add user to event');
 
       });

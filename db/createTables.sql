@@ -1,11 +1,5 @@
-/* From https://sqlite.org/autoinc.html
-   The AUTOINCREMENT keyword imposes extra CPU, memory, disk space, and disk
-   I/O overhead and should be avoided if not strictly needed (it is usually 
-   not). 
-*/
-
 CREATE TABLE IF NOT EXISTS events (
-  id              integer       PRIMARY KEY
+  id              integer       PRIMARY KEY AUTOINCREMENT 
 , name            varchar(50)
 , description     text
 , admin_id        integer       NOT NULL REFERENCES users  (id)
@@ -21,7 +15,7 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 CREATE TABLE IF NOT EXISTS users (
-  id              integer       PRIMARY KEY
+  id              integer       PRIMARY KEY AUTOINCREMENT
 , first_name      varchar(35)
 , last_name       varchar(35)
 , email_addr      varchar(50)
