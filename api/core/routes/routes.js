@@ -2,6 +2,7 @@ var restify = require('restify');
 var config  = require(process.cwd() + '/config');
 var controllers = require(config.controllersPath);
 var nodemailerSettings = require(config.nodemailerSettings);
+var lib = require(config.libDirectory);
 
 // see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
 // for a description of REST protocols
@@ -290,24 +291,7 @@ module.exports = function(server) {
 
     controllers.event.retrieveEventUsers(req.params.id)
       .then(function(result) {
-        let pairs = [];
-
-        for (user of result) {
-          userArray.push(user.id);
-        }
-        userArray = shuffle(userArray);
-
-        // create the list of pairs:
-        // each element is paired with the next element, however the
-        // last element is paired with the first
-        for (let i = 0; i < userArray.length - 1; i++) {
-          pair = [ userArray[i], userArray[i + 1] ];
-          pairs.push(pair);
-        }
-        // add final pair to list of pairs
-        pairs.push([ userArray[userArray.length - 1], userArray[0] ]);
-
-        return pairs;
+        return lib.randomPairGenerator.generateWithoutExclusions(result);
       })
 
       .then(function(result) {
@@ -350,7 +334,8 @@ module.exports = function(server) {
 
       .then(function(result) {
 //        console.log(result);
-        sendMessages(result);
+        lib.resultMailer.sendMessages(result); 
+//        sendMessages(result);
         res.send(200, result);
       })
 
@@ -395,116 +380,3 @@ module.exports = function(server) {
   });
 
 }
-
-function sendMessages(pairs) {
-  const nodemailer = require('nodemailer');
-  let mailOptions = {};
-
-  let transporter = nodemailer.createTransport({
-    host:   nodemailerSettings.host
-  , port:   nodemailerSettings.port
-  , secure: nodemailerSettings.secure
-  , auth: {
-      user: nodemailerSettings.auth.user
-    , pass: nodemailerSettings.auth.pass
-    }
-  });
-
-  for (pair of pairs) {
-    htmlMessage = `
-                  Greetings ${pair.giver_first_name},
-                  <br><br>
-                  You've been selected to give ${pair.receiver_first_name} 
-                  ${pair.receiver_last_name} a gift.
-                  `
-
-    console.log(pair.giver_email_addr + ' -> ' + pair.receiver_first_name + ' ' + pair.receiver_last_name);
-
-    if (nodemailerSettings.testing === true) {
-      mailOptions = {
-          from:     nodemailerSettings.auth.user
-        , to:       nodemailerSettings.testRecipient
-        , subject:  'Gift Exchange Information (TESTING)'
-        , html:     htmlMessage
-      };
-    }
-    else {
-      mailOptions = {
-        from:     nodemailerSettings.auth.user
-      , to:       nodemailerSettings.testAcct
-      , subject:  'Gift Exchange Information'
-      , html:     htmlMessage
-      };
-    }
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error)
-        return console.log(error);
-      console.log('Message %s sent: %s', info.messageId, info.response);
-    });
-  }
-}
-/*
-function sendMessages(pairs) {
-  var Promise = require('promise');
-  var fs = require('fs');
-  const nodemailer = require('nodemailer');
-  htmlMessage = '';
-
-  // get email body to send to participants
-  var promise = new Promise(function(resolve, reject) {
-    fs.readFile(config.emailBodyHtml, function(err, data) {
-      if (err) reject(err);
-      else resolve(data);
-    });
-  })
-
-  .then(function(data) {
-    console.log('data: ' + data);
-    htmlMessage = data;
-
-    let mailOptions = {};
-    let transporter = nodemailer.createTransport({
-      host:   nodemailerSettings.host
-    , port:   nodemailerSettings.port
-    , secure: nodemailerSettings.secure
-    , auth: {
-        user: nodemailerSettings.auth.user
-      , pass: nodemailerSettings.auth.pass
-      }
-    });
-
-    for (pair of pairs.slice(1,2)) {
-      console.log(pair.giver_email_addr + ' -> ' + pair.receiver_first_name + ' ' + pair.receiver_last_name);
-
-      if (nodemailerSettings.testing === true) {
-        mailOptions = {
-            from:     nodemailerSettings.auth.user
-          , to:       nodemailerSettings.testRecipient
-          , subject:  'Gift Exchange Information (TESTING)'
-          , html:     htmlMessage
-        };
-      }
-
-      else {
-        mailOptions = {
-          from:     nodemailerSettings.auth.user
-        , to:       nodemailerSettings.testAcct
-        , subject:  'Gift Exchange Information'
-        , html:     htmlMessage
-        };
-      }
-
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error)
-          return console.log(error);
-        console.log('Message %s sent: %s', info.messageId, info.response);
-      });
-    }
-  })
-
-  .catch(function(err) {
-    console.log(err);
-  });
-}
-  */
